@@ -1,0 +1,14 @@
+{
+  acme_ca https://acme-v02.api.letsencrypt.org/directory
+}
+
+{$DOMAIN:localhost} {
+  encode gzip
+  reverse_proxy /api/* api:8000
+  reverse_proxy /agent/* api:8000
+  reverse_proxy /docs* api:8000
+  reverse_proxy /openapi.json api:8000
+  reverse_proxy /redoc* api:8000
+  reverse_proxy /health api:8000
+  reverse_proxy web:80
+}

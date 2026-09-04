@@ -1,0 +1,148 @@
+:root {
+  --sidebar: #0b2e3a;
+  --sidebar-2: #0f4c5c;
+  --accent: #1b6b93;
+  --page: #f4f6f8;
+  --ok: #198754;
+  --warn: #c9a227;
+  --crit: #dc3545;
+  --off: #6c757d;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--page);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.app-shell {
+  min-height: 100%;
+  display: flex;
+}
+
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, var(--sidebar), var(--sidebar-2));
+  color: #e8f1f4;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar a {
+  color: #d5e6ec;
+  text-decoration: none;
+  display: block;
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  margin: 0.1rem 0.6rem;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.sidebar .brand {
+  padding: 1.2rem 1.1rem 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sidebar .muted {
+  padding: 0 1.1rem 1rem;
+  font-size: 0.8rem;
+  color: #9cb8c3;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e6eaee;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.page {
+  padding: 1.25rem;
+}
+
+.kpi {
+  background: #fff;
+  border: 1px solid #e6eaee;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+
+.kpi .n {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.badge-online { background: var(--ok); }
+.badge-offline { background: var(--off); }
+.badge-advertencia { background: var(--warn); color: #111; }
+.badge-critico { background: var(--crit); }
+.badge-excluido, .badge-mantenimiento { background: #5c6b73; }
+
+.bar {
+  height: 18px;
+  background: #e9eef1;
+  border-radius: 9px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.bar .label {
+  position: absolute;
+  inset: 0;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.login-wrap {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #0b2e3a, #1b6b93);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.coming-soon {
+  color: #8aa0a8;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; }
+}
