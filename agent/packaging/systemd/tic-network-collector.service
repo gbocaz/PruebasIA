@@ -1,0 +1,19 @@
+[Unit]
+Description=Recolector de red TIC Control AI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tic-network-collector run --config /etc/tic-control/network-collector.json
+Restart=always
+RestartSec=10
+User=root
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/etc/tic-control
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

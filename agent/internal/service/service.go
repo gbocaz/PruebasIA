@@ -4,9 +4,9 @@ import (
 	"github.com/kardianos/service"
 )
 
-func New(display, description string, runner func()) (service.Service, error) {
+func New(name, display, description string, runner func()) (service.Service, error) {
 	cfg := &service.Config{
-		Name:        "TICControlAgent",
+		Name:        name,
 		DisplayName: display,
 		Description: description,
 	}

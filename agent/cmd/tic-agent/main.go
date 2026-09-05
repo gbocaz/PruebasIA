@@ -54,23 +54,23 @@ func enrollCmd(args []string) {
 	cli := client.New(*server, "", nil)
 	host := collect.Collect(version)
 	body := map[string]any{
-		"token":          *token,
-		"hostname":       host.Hostname,
-		"os_family":      host.OSFamily,
-		"os_name":        host.OSName,
-		"os_version":     host.OSVersion,
-		"architecture":   host.Architecture,
-		"agent_version":  version,
+		"token":         *token,
+		"hostname":      host.Hostname,
+		"os_family":     host.OSFamily,
+		"os_name":       host.OSName,
+		"os_version":    host.OSVersion,
+		"architecture":  host.Architecture,
+		"agent_version": version,
 	}
 	data, err := cli.Post("/agent/enroll", body, false)
 	if err != nil {
 		log.Fatalf("enrolamiento fallido: %v", err)
 	}
 	var res struct {
-		DeviceID        string `json:"device_id"`
-		AgentToken      string `json:"agent_token"`
-		HMACSecret      string `json:"hmac_secret"`
-		HeartbeatSecs   int    `json:"heartbeat_interval_seconds"`
+		DeviceID      string `json:"device_id"`
+		AgentToken    string `json:"agent_token"`
+		HMACSecret    string `json:"hmac_secret"`
+		HeartbeatSecs int    `json:"heartbeat_interval_seconds"`
 	}
 	if err := json.Unmarshal(data, &res); err != nil {
 		log.Fatal(err)
@@ -137,7 +137,7 @@ func runLoop(cfgPath string) {
 }
 
 func installService() {
-	s, err := svc.New("TIC Control Agent", "Agente de inventario y mantenimiento TIC Control AI", func() {
+	s, err := svc.New("TICControlAgent", "TIC Control Agent", "Agente de inventario y mantenimiento TIC Control AI", func() {
 		runLoop(config.DefaultPath())
 	})
 	if err != nil {
@@ -150,7 +150,7 @@ func installService() {
 }
 
 func uninstallService() {
-	s, err := svc.New("TIC Control Agent", "Agente de inventario y mantenimiento TIC Control AI", func() {})
+	s, err := svc.New("TICControlAgent", "TIC Control Agent", "Agente de inventario y mantenimiento TIC Control AI", func() {})
 	if err != nil {
 		log.Fatal(err)
 	}

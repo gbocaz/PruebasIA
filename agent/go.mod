@@ -1,8 +1,9 @@
 module github.com/gbocaz/tic-control-agent
 
-go 1.22
+go 1.24.0
 
 require (
+	github.com/gosnmp/gosnmp v1.44.0
 	github.com/kardianos/service v1.2.2
 	github.com/shirou/gopsutil/v3 v3.24.5
 	golang.org/x/sys v0.22.0
