@@ -6,6 +6,7 @@ import api from "../api/client";
 const links = [
   { to: "/", label: "Dashboard" },
   { to: "/equipos", label: "Equipos" },
+  { to: "/despliegue-agentes", label: "Desplegar agentes" },
   { to: "/red", label: "Red" },
   { to: "/software", label: "Software" },
   { to: "/paquetes", label: "Paquetes" },

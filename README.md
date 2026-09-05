@@ -11,6 +11,7 @@ Documentación de diseño:
 - [Flujo agente ↔ servidor](docs/FLUJO_AGENTE.md)
 - [Seguridad](docs/SEGURIDAD.md)
 - [Red multi-marca e instalación del recolector](docs/RED_MULTI_MARCA.md)
+- [Despliegue separado de agentes](docs/DESPLIEGUE_AGENTES.md)
 - [Fases](docs/FASES.md)
 
 ## Estructura
@@ -128,6 +129,8 @@ También incluye descubrimiento de red multi-marca mediante un recolector por se
 - apertura auditada de RDP/VNC/SSH/web cuando ya están habilitados.
 
 Instalación detallada: [docs/RED_MULTI_MARCA.md](docs/RED_MULTI_MARCA.md).
+
+El binario de administración se distribuye desde **Desplegar agentes**, separado de los paquetes de aplicaciones. El módulo genera scripts Windows/Linux temporales, verifica SHA-256 e instala el servicio de forma visible. Guía: [docs/DESPLIEGUE_AGENTES.md](docs/DESPLIEGUE_AGENTES.md).
 
 ## Qué no incluye aún (fases 4-7)
 

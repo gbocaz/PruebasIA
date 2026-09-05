@@ -39,6 +39,8 @@ Autenticación de agentes: `Authorization: Bearer <agent_token>` emitido en el e
 | GET | `/api/dashboard` | autenticado | KPI del MVP |
 | GET/POST | `/api/agents/enrollment-tokens` | admin | Tokens de alta |
 | GET | `/api/reports/inventory.csv` | autenticado | Exportación |
+| GET/POST | `/api/agent-deployment/releases` | admin (carga) | Versiones aprobadas del agente |
+| POST | `/api/agent-deployment/kits` | admin | Instalador temporal Windows/Linux |
 | GET/POST/PATCH | `/api/network/sites` | admin (escritura) | Sedes y CIDR autorizados |
 | GET/POST | `/api/network/sites/{id}/collectors` | admin (escritura) | Recolectores por sede |
 | GET/POST/DELETE | `/api/network/sites/{id}/credentials` | admin | SNMP cifrado |
@@ -58,6 +60,7 @@ Autenticación de agentes: `Authorization: Bearer <agent_token>` emitido en el e
 | GET | `/agent/tasks` | Tareas pendientes no expiradas |
 | POST | `/agent/task-result` | Resultado (idempotente) |
 | GET | `/agent/packages/{id}/download` | Descarga del instalador aprobado |
+| GET | `/agent/bootstrap/releases/{id}` | Descarga de agente con token temporal |
 
 ## Protocolo del recolector de red
 

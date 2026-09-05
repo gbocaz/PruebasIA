@@ -65,7 +65,12 @@ export default function NetworkDevicePage() {
           <h1 className="h4 mb-1">{device.hostname || device.sys_name || device.ip_address}</h1>
           <StatusBadge status={device.status} /> <span className="ms-2">{device.vendor} {device.model}</span>
         </div>
-        <span className="badge text-bg-light">{device.device_type}</span>
+        <div className="d-flex gap-2">
+          {device.managed_device_id
+            ? <Link className="btn btn-sm btn-success" to={`/equipos/${device.managed_device_id}`}>Abrir equipo administrado</Link>
+            : <Link className="btn btn-sm btn-outline-primary" to="/despliegue-agentes">Instalar agente</Link>}
+          <span className="badge text-bg-light">{device.device_type}</span>
+        </div>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
       <div className="row g-3 mb-3">

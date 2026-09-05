@@ -15,6 +15,7 @@ import AlertsPage from "./pages/AlertsPage";
 import UsersPage from "./pages/UsersPage";
 import AuditPage from "./pages/AuditPage";
 import SettingsPage from "./pages/SettingsPage";
+import AgentDeploymentPage from "./pages/AgentDeploymentPage";
 
 function Private({ children }) {
   const { user, ready } = useAuth();
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/usuarios" element={<Private><UsersPage /></Private>} />
           <Route path="/auditoria" element={<Private><AuditPage /></Private>} />
           <Route path="/configuracion" element={<Private><SettingsPage /></Private>} />
+          <Route path="/despliegue-agentes" element={<Private><AgentDeploymentPage /></Private>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

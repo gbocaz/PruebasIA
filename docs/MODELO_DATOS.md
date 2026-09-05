@@ -26,6 +26,7 @@ network_sites 1──* network_credentials
 network_sites 1──* network_scan_jobs
 network_sites 1──* network_devices
 network_sites 1──* network_links
+agent_releases 1──* agent_deployment_kits *──1 enrollment_tokens
 ```
 
 ## Tablas
@@ -79,6 +80,9 @@ Perfiles SNMPv3 o SNMPv2c. Secretos cifrados en reposo; las respuestas administr
 
 ### network_scan_jobs / network_devices / network_links
 Escaneos confirmados, inventario neutral de fabricante y relaciones LLDP/CDP. Los dispositivos guardan IP, MAC, marca, modelo, serie, tipo, puertos y protocolos remotos detectados.
+
+### agent_releases / agent_deployment_kits
+Binarios del agente separados de paquetes de aplicaciones. Cada versión tiene plataforma, arquitectura y SHA-256. Un kit referencia un token de enrolamiento limitado y genera un script visible de instalación.
 
 ## Tablas previstas (fases posteriores)
 

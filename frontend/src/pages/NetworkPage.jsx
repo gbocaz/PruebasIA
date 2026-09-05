@@ -254,12 +254,17 @@ export default function NetworkPage() {
                 value={query} onChange={(event) => setQuery(event.target.value)} />
               <div className="table-responsive kpi p-0">
                 <table className="table mb-0">
-                  <thead><tr><th>Dispositivo</th><th>Estado</th><th>IP / MAC</th><th>Marca / modelo</th><th>Tipo</th><th>Servicios</th><th>Origen</th></tr></thead>
+                  <thead><tr><th>Dispositivo</th><th>Estado</th><th>Gestión</th><th>IP / MAC</th><th>Marca / modelo</th><th>Tipo</th><th>Servicios</th><th>Origen</th></tr></thead>
                   <tbody>
                     {shownDevices.map((device) => (
                       <tr key={device.id}>
                         <td><Link to={`/red/dispositivos/${device.id}`}>{device.hostname || device.sys_name || "Sin nombre"}</Link></td>
                         <td><StatusBadge status={device.status} /></td>
+                        <td>
+                          {device.managed_device_id
+                            ? <Link to={`/equipos/${device.managed_device_id}`} className="badge text-bg-success">Con agente</Link>
+                            : <span className="badge text-bg-secondary">Sin agente</span>}
+                        </td>
                         <td>{device.ip_address}<br /><span className="small text-secondary">{device.mac_address || "MAC no disponible"}</span></td>
                         <td>{device.vendor}<br /><span className="small text-secondary">{device.model || "Modelo no publicado"}</span></td>
                         <td>{device.device_type}</td>

@@ -34,6 +34,10 @@ Catálogo con categoría. Consultas: “¿en cuántos equipos está Chrome?”, 
 
 Carga de instalador, hash SHA-256, comando aprobado, destino (equipo, grupo o todos) y progreso por equipo.
 
+## Desplegar agentes
+
+Módulo separado de Software. Carga binarios oficiales de `tic-agent`, calcula SHA-256 y genera kits temporales `.ps1` o `.sh` con grupo, límite de usos y caducidad. Resume equipos detectados, con agente y sin agente.
+
 ## Grupos, Alertas, Usuarios, Auditoría, Configuración
 
 CRUD de grupos y exclusiones; bandeja de alertas; RBAC; log de auditoría; tokens de enrolamiento.
