@@ -1,0 +1,15 @@
+[Unit]
+Description=Agente TIC Control AI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tic-agent run --config /etc/tic-control/agent.json
+Restart=always
+RestartSec=5
+User=root
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

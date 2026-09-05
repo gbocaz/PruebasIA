@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.db
+*.sqlite3
+.pytest_cache/
+.coverage
+htmlcov/
+backend/data/
+backend/uploads/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# Go
+agent/tic-agent
+agent/tic-agent.exe
+agent/bin/
+*.exe
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Secrets
+*.pem
+*.key
+.env.*
+!.env.example
+!deploy/.env.example

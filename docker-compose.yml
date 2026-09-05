@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tic
+      POSTGRES_PASSWORD: tic
+      POSTGRES_DB: ticcontrol
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tic -d ticcontrol"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    env_file: ./deploy/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://tic:tic@db:5432/ticcontrol
+      CORS_ORIGINS: http://localhost,http://127.0.0.1
+      HTTPS_ONLY: "false"
+      COOKIE_SECURE: "false"
+    volumes:
+      - uploads:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./frontend
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:
+  uploads:
