@@ -258,3 +258,143 @@ def test_restart_requires_confirmation(client):
         json={"action": "restart_agent", "confirm": False},
     )
     assert denied.status_code == 400
+
+
+def test_network_discovery_collector_and_remote_support(client):
+    headers = login(client)
+    site = client.post(
+        "/api/network/sites",
+        headers=headers,
+        json={
+            "name": "Sede pruebas",
+            "description": "Red autorizada para pruebas",
+            "location": "Local",
+            "cidrs": ["127.0.0.0/30"],
+            "max_hosts_per_scan": 16,
+        },
+    )
+    assert site.status_code == 201, site.text
+    site_id = site.json()["id"]
+    external = client.post(
+        "/api/network/sites",
+        headers=headers,
+        json={
+            "name": "No permitida",
+            "cidrs": ["8.8.8.0/24"],
+            "max_hosts_per_scan": 300,
+        },
+    )
+    assert external.status_code == 422
+
+    credential = client.post(
+        f"/api/network/sites/{site_id}/credentials",
+        headers=headers,
+        json={
+            "name": "SNMP laboratorio",
+            "kind": "snmp_v3",
+            "username": "tic-ro",
+            "secret": "ClaveAutenticacion",
+            "auth_protocol": "SHA",
+            "privacy_protocol": "AES",
+            "privacy_secret": "ClavePrivacidad",
+        },
+    )
+    assert credential.status_code == 201, credential.text
+    assert "secret" not in credential.json()
+
+    created = client.post(
+        f"/api/network/sites/{site_id}/collectors",
+        headers=headers,
+        json={"name": "Recolector local"},
+    )
+    assert created.status_code == 201, created.text
+    collector_token = created.json()["token"]
+    assert collector_token
+    collector_headers = {"Authorization": f"Bearer {collector_token}"}
+
+    heartbeat = client.post(
+        "/collector/heartbeat",
+        headers=collector_headers,
+        json={"hostname": "collector-lab", "version": "0.1.0"},
+    )
+    assert heartbeat.status_code == 200
+    config = client.get("/collector/config", headers=collector_headers)
+    assert config.status_code == 200
+    assert config.headers["cache-control"] == "no-store"
+    assert config.json()["cidrs"] == ["127.0.0.0/30"]
+    assert config.json()["credentials"][0]["secret"] == "ClaveAutenticacion"
+
+    confirmation = client.post(
+        "/api/network/scans",
+        headers=headers,
+        json={"site_id": site_id, "methods": ["tcp", "arp", "snmp"], "confirm": False},
+    )
+    assert confirmation.status_code == 400
+    scan = client.post(
+        "/api/network/scans",
+        headers=headers,
+        json={"site_id": site_id, "methods": ["tcp", "arp", "snmp"], "confirm": True},
+    )
+    assert scan.status_code == 201, scan.text
+    scan_id = scan.json()["id"]
+    tasks = client.get("/collector/tasks", headers=collector_headers)
+    assert tasks.status_code == 200
+    assert tasks.json()[0]["scan_id"] == scan_id
+
+    result = client.post(
+        f"/collector/scans/{scan_id}/results",
+        headers=collector_headers,
+        json={
+            "devices": [
+                {
+                    "identity_key": "aa:bb:cc:dd:ee:ff",
+                    "ip_address": "127.0.0.1",
+                    "mac_address": "aa:bb:cc:dd:ee:ff",
+                    "hostname": "pc-remoto",
+                    "vendor": "Cisco",
+                    "model": "Equipo de prueba",
+                    "device_type": "computador",
+                    "status": "online",
+                    "discovery_source": "tcp,snmp",
+                    "sys_name": "pc-remoto",
+                    "sys_description": "Cisco IOS test",
+                    "open_ports": [22, 80, 3389],
+                    "remote_services": ["ssh", "http", "rdp"],
+                    "management_url": "http://127.0.0.1",
+                }
+            ],
+            "links": [],
+        },
+    )
+    assert result.status_code == 200, result.text
+    assert result.json()["result_count"] == 1
+    assert client.post(
+        f"/collector/scans/{scan_id}/results",
+        headers=collector_headers,
+        json={"devices": []},
+    ).json()["idempotent"] is True
+
+    devices = client.get("/api/network/devices", headers=headers, params={"site_id": site_id})
+    assert devices.status_code == 200
+    device = devices.json()[0]
+    assert device["vendor"] == "Cisco"
+    assert "rdp" in device["remote_services"]
+
+    denied = client.post(
+        f"/api/network/devices/{device['id']}/remote-session",
+        headers=headers,
+        json={"protocol": "rdp", "confirm": False},
+    )
+    assert denied.status_code == 400
+    rdp = client.post(
+        f"/api/network/devices/{device['id']}/remote-session",
+        headers=headers,
+        json={"protocol": "rdp", "username": "soporte", "confirm": True},
+    )
+    assert rdp.status_code == 200
+    assert "prompt for credentials:i:1" in rdp.text
+    assert "password" not in rdp.text.lower()
+
+    audit = client.get("/api/audit", headers=headers).json()
+    assert any(row["action"] == "network_scan_create" for row in audit)
+    assert any(row["action"] == "network_remote_session" for row in audit)
