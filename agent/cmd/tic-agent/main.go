@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gbocaz/tic-control-agent/internal/backoff"
@@ -46,15 +47,24 @@ func enrollCmd(args []string) {
 	fs := flag.NewFlagSet("enroll", flag.ExitOnError)
 	server := fs.String("server", "", "URL del servidor, por ejemplo https://tic.institucion.tld")
 	token := fs.String("token", "", "Token de enrolamiento")
+	tokenFile := fs.String("token-file", "", "Archivo protegido que contiene el token")
 	cfgPath := fs.String("config", config.DefaultPath(), "Ruta de configuración")
 	_ = fs.Parse(args)
-	if *server == "" || *token == "" {
-		log.Fatal("uso: tic-agent enroll --server URL --token TOKEN")
+	enrollmentToken := *token
+	if *tokenFile != "" {
+		data, err := os.ReadFile(*tokenFile)
+		if err != nil {
+			log.Fatalf("no se pudo leer token-file: %v", err)
+		}
+		enrollmentToken = strings.TrimSpace(string(data))
+	}
+	if *server == "" || enrollmentToken == "" {
+		log.Fatal("uso: tic-agent enroll --server URL (--token TOKEN | --token-file ARCHIVO)")
 	}
 	cli := client.New(*server, "", nil)
 	host := collect.Collect(version)
 	body := map[string]any{
-		"token":         *token,
+		"token":         enrollmentToken,
 		"hostname":      host.Hostname,
 		"os_family":     host.OSFamily,
 		"os_name":       host.OSName,

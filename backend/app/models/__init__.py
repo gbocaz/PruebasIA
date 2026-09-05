@@ -1,4 +1,5 @@
 from app.models.device import Agent, AgentTask, Device, DeviceEvent, DeviceGroup, DeviceGroupMember, DeviceMetric, NetworkInterface
+from app.models.deployment import AgentDeploymentKit, AgentRelease
 from app.models.network import (
     NetworkCollector,
     NetworkCredential,
@@ -31,6 +32,8 @@ __all__ = [
     "Alert",
     "AuditLog",
     "SystemSetting",
+    "AgentRelease",
+    "AgentDeploymentKit",
     "NetworkSite",
     "NetworkCollector",
     "NetworkCredential",

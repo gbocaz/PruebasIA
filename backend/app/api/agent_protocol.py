@@ -17,6 +17,7 @@ from app.security.agent_auth import get_current_agent
 from app.security.crypto import encrypt_secret
 from app.security.tokens import new_token, sha256_hex, utcnow, canonical_iso, as_utc
 from app.services.inventory import replace_interfaces, upsert_software_inventory
+from app.services.network import link_managed_device
 from app.services.status import alert_unauthorized_software, apply_status_and_alerts
 from app.services.tasks import pending_tasks
 
@@ -110,6 +111,7 @@ def _apply_heartbeat(db: Session, agent: Agent, body: HeartbeatIn) -> Device:
     )
     if body.interfaces:
         replace_interfaces(db, device, [i.model_dump() for i in body.interfaces])
+    link_managed_device(db, device)
     apply_status_and_alerts(db, device, previous)
     return device
 

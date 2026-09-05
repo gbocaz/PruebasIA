@@ -18,6 +18,7 @@ from app.services.status import refresh_offline_devices
 settings = get_settings()
 Path("data").mkdir(exist_ok=True)
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+Path(settings.agent_release_dir).mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
     title="TIC Control AI",

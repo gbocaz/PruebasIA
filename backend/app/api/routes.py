@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.agent_protocol import router as agent_protocol_router
+from app.api.agent_deployment import bootstrap_router, router as agent_deployment_router
 from app.api.agents_admin import router as agents_admin_router
 from app.api.alerts import router as alerts_router
 from app.api.audit import router as audit_router
@@ -33,4 +34,6 @@ api_router.include_router(search_router)
 api_router.include_router(agents_admin_router)
 api_router.include_router(reports_router)
 api_router.include_router(agent_protocol_router)
+api_router.include_router(agent_deployment_router)
+api_router.include_router(bootstrap_router)
 api_router.include_router(collector_protocol_router)

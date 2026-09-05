@@ -107,6 +107,7 @@ class ScanOut(BaseModel):
 class NetworkDeviceOut(BaseModel):
     id: str
     site_id: str
+    managed_device_id: str | None
     ip_address: str
     mac_address: str
     hostname: str

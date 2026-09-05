@@ -6,6 +6,7 @@ from urllib.parse import quote
 from fastapi import HTTPException, status
 
 from app.models.network import NetworkCollector, NetworkDevice, NetworkScanJob, NetworkSite
+from app.models.device import Device
 from app.schemas.network import NetworkDeviceOut, ScanOut
 from app.security.tokens import as_utc, utcnow
 
@@ -75,6 +76,7 @@ def device_to_out(device: NetworkDevice) -> NetworkDeviceOut:
     return NetworkDeviceOut(
         id=device.id,
         site_id=device.site_id,
+        managed_device_id=device.managed_device_id,
         ip_address=device.ip_address,
         mac_address=device.mac_address,
         hostname=device.hostname,
@@ -131,3 +133,17 @@ def remote_target(device: NetworkDevice, protocol: str, username: str) -> dict:
     if not url or not url.startswith(f"{protocol}://"):
         url = f"{protocol}://{ip}"
     return {"kind": "url", "url": url}
+
+
+def link_managed_device(db, device: Device) -> int:
+    """Vincula inventario pasivo y agente usando MAC; evita ambigüedad por IP repetida."""
+    mac = (device.mac_address or "").strip().lower()
+    if not mac:
+        return 0
+    matches = db.query(NetworkDevice).filter(NetworkDevice.mac_address == mac).all()
+    linked = 0
+    for network_device in matches:
+        if network_device.managed_device_id in {None, device.id}:
+            network_device.managed_device_id = device.id
+            linked += 1
+    return linked

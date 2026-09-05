@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     bootstrap_admin_password: str = "CambiarAdmin123!"
 
     upload_dir: str = "./data/packages"
+    agent_release_dir: str = "./data/agent-releases"
     max_package_mb: int = 512
     heartbeat_offline_factor: int = 3
     default_heartbeat_seconds: int = 60

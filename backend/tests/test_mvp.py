@@ -440,3 +440,95 @@ def test_network_discovery_collector_and_remote_support(client):
     audit = client.get("/api/audit", headers=headers).json()
     assert any(row["action"] == "network_scan_create" for row in audit)
     assert any(row["action"] == "network_remote_session" for row in audit)
+
+    _admin_headers, managed_agent = _enroll_agent(client)
+    linked = client.post(
+        "/agent/heartbeat",
+        headers={"Authorization": f"Bearer {managed_agent['agent_token']}"},
+        json={
+            "hostname": "pc-remoto",
+            "os_family": "linux",
+            "ip_address": "127.0.0.1",
+            "mac_address": "aa:bb:cc:dd:ee:ff",
+            "cpu_percent": 2,
+            "ram_total_mb": 2048,
+            "ram_used_mb": 256,
+            "disk_total_gb": 40,
+            "disk_used_gb": 5,
+        },
+    )
+    assert linked.status_code == 200
+    refreshed = client.get("/api/network/devices", headers=headers, params={"site_id": site_id}).json()[0]
+    assert refreshed["managed_device_id"] == managed_agent["device_id"]
+
+
+def test_agent_release_and_temporary_deployment_kit(client):
+    headers = login(client)
+    agent_binary = b"\x7fELF" + b"approved-agent-binary"
+    release = client.post(
+        "/api/agent-deployment/releases",
+        headers=headers,
+        data={
+            "version": "0.2.0-test",
+            "os_family": "linux",
+            "architecture": "amd64",
+            "notes": "Binario de prueba",
+        },
+        files={"file": ("tic-agent", io.BytesIO(agent_binary), "application/octet-stream")},
+    )
+    assert release.status_code == 201, release.text
+    release_data = release.json()
+    assert len(release_data["sha256"]) == 64
+
+    kit = client.post(
+        "/api/agent-deployment/kits",
+        headers=headers,
+        json={
+            "release_id": release_data["id"],
+            "label": "Equipo de prueba",
+            "public_server_url": "http://127.0.0.1:8000",
+            "max_uses": 1,
+            "expires_hours": 1,
+        },
+    )
+    assert kit.status_code == 201, kit.text
+    kit_data = kit.json()
+    assert kit_data["filename"].endswith(".sh")
+    assert release_data["sha256"] in kit_data["install_script"]
+    assert "--token-file" in kit_data["install_script"]
+    assert "sha256sum -c" in kit_data["install_script"]
+    assert "CambiarAdmin123!" not in kit_data["install_script"]
+
+    missing = client.get(f"/agent/bootstrap/releases/{release_data['id']}")
+    assert missing.status_code == 401
+    wrong = client.get(
+        f"/agent/bootstrap/releases/{release_data['id']}",
+        headers={"Authorization": "Bearer incorrecto"},
+    )
+    assert wrong.status_code == 401
+    downloaded = client.get(
+        f"/agent/bootstrap/releases/{release_data['id']}",
+        headers={"Authorization": f"Bearer {kit_data['token']}"},
+    )
+    assert downloaded.status_code == 200
+    assert downloaded.content == agent_binary
+
+    enrolled = client.post(
+        "/agent/enroll",
+        json={
+            "token": kit_data["token"],
+            "hostname": "kit-installed-host",
+            "os_family": "linux",
+            "architecture": "amd64",
+            "agent_version": "0.2.0-test",
+        },
+    )
+    assert enrolled.status_code == 200
+    exhausted = client.get(
+        f"/agent/bootstrap/releases/{release_data['id']}",
+        headers={"Authorization": f"Bearer {kit_data['token']}"},
+    )
+    assert exhausted.status_code == 401
+    audit = client.get("/api/audit", headers=headers).json()
+    assert any(row["action"] == "agent_release_upload" for row in audit)
+    assert any(row["action"] == "agent_deployment_kit_create" for row in audit)

@@ -83,6 +83,9 @@ class NetworkDevice(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     site_id: Mapped[str] = mapped_column(ForeignKey("network_sites.id", ondelete="CASCADE"), index=True)
+    managed_device_id: Mapped[str | None] = mapped_column(
+        ForeignKey("devices.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     identity_key: Mapped[str] = mapped_column(String(255))
     ip_address: Mapped[str] = mapped_column(String(64), default="", index=True)
     mac_address: Mapped[str] = mapped_column(String(32), default="", index=True)
