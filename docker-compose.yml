@@ -16,7 +16,7 @@ services:
   api:
     build:
       context: ./backend
-    env_file: ./deploy/.env.example
+    env_file: ./deploy/.env
     environment:
       DATABASE_URL: postgresql+psycopg2://tic:tic@db:5432/ticcontrol
       CORS_ORIGINS: http://localhost,http://127.0.0.1

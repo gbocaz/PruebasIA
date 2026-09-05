@@ -39,6 +39,13 @@ Autenticación de agentes: `Authorization: Bearer <agent_token>` emitido en el e
 | GET | `/api/dashboard` | autenticado | KPI del MVP |
 | GET/POST | `/api/agents/enrollment-tokens` | admin | Tokens de alta |
 | GET | `/api/reports/inventory.csv` | autenticado | Exportación |
+| GET/POST/PATCH | `/api/network/sites` | admin (escritura) | Sedes y CIDR autorizados |
+| GET/POST | `/api/network/sites/{id}/collectors` | admin (escritura) | Recolectores por sede |
+| GET/POST/DELETE | `/api/network/sites/{id}/credentials` | admin | SNMP cifrado |
+| GET/POST | `/api/network/scans` | admin (ejecutar) | Descubrimiento confirmado |
+| GET | `/api/network/devices` | autenticado | Inventario multi-marca |
+| GET | `/api/network/links` | autenticado | Enlaces LLDP/CDP |
+| POST | `/api/network/devices/{id}/remote-session` | admin/soporte | Abrir protocolo preexistente |
 
 ## Protocolo del agente (el PC inicia)
 
@@ -51,6 +58,17 @@ Autenticación de agentes: `Authorization: Bearer <agent_token>` emitido en el e
 | GET | `/agent/tasks` | Tareas pendientes no expiradas |
 | POST | `/agent/task-result` | Resultado (idempotente) |
 | GET | `/agent/packages/{id}/download` | Descarga del instalador aprobado |
+
+## Protocolo del recolector de red
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/collector/heartbeat` | Estado del recolector de sede |
+| GET | `/collector/config` | CIDR y perfiles SNMP de su propia sede |
+| GET | `/collector/tasks` | Escaneos pendientes |
+| POST | `/collector/scans/{id}/results` | Inventario y enlaces descubiertos |
+
+El recolector usa token individual, HTTPS y `Cache-Control: no-store` para la configuración sensible. Los resultados fuera de los CIDR autorizados se rechazan.
 
 ## Tareas
 

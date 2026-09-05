@@ -78,6 +78,24 @@ func Discover(cfg ServerConfig, methods []string, local LocalConfig) (ScanResult
 	if allowed["arp"] {
 		arp = neighborTable()
 	}
+	portByMAC := map[string]string{}
+	for _, ip := range addresses {
+		probe := probes[ip]
+		for learnedIP, mac := range probe.snmp.IPToMAC {
+			if arp[learnedIP] == "" {
+				arp[learnedIP] = mac
+			}
+		}
+		switchName := probe.snmp.SysName
+		if switchName == "" {
+			switchName = ip
+		}
+		for mac, port := range probe.snmp.MACToPort {
+			if portByMAC[mac] == "" {
+				portByMAC[mac] = switchName + "/" + port
+			}
+		}
+	}
 	vendorDB := loadOUIDatabase(local.OUIFile)
 	var devices []Device
 	for _, ip := range addresses {
@@ -125,6 +143,7 @@ func Discover(cfg ServerConfig, methods []string, local LocalConfig) (ScanResult
 			OpenPorts:       probe.openPorts,
 			RemoteServices:  services,
 			ManagementURL:   managementURL,
+			SwitchPort:      portByMAC[mac],
 			neighbors:       probe.snmp.Neighbors,
 		}
 		devices = append(devices, device)

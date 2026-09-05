@@ -10,6 +10,7 @@ Documentación de diseño:
 - [Pantallas](docs/PANTALLAS.md)
 - [Flujo agente ↔ servidor](docs/FLUJO_AGENTE.md)
 - [Seguridad](docs/SEGURIDAD.md)
+- [Red multi-marca e instalación del recolector](docs/RED_MULTI_MARCA.md)
 - [Fases](docs/FASES.md)
 
 ## Estructura
@@ -27,7 +28,7 @@ docker-compose.yml
 
 - Python 3.12
 - Node.js 20+
-- Go 1.22+
+- Go 1.24+
 - Docker (opcional, recomendado en producción)
 - PostgreSQL en producción; SQLite basta para desarrollo
 
@@ -116,9 +117,20 @@ cd agent && go test ./...
 
 Login y 2FA opcional, RBAC, agente Windows/Linux, heartbeat, inventario de hardware y software, grupos, dashboard, instalación remota con SHA-256 y comando aprobado, alertas, historial de métricas y auditoría.
 
+También incluye descubrimiento de red multi-marca mediante un recolector por sede:
+
+- no requiere instalar agente en cada dispositivo descubierto;
+- redes privadas expresamente autorizadas;
+- TCP, ARP, SNMPv3/SNMPv2c, ENTITY-MIB, IP-MIB y BRIDGE-MIB;
+- vecinos LLDP/CDP;
+- Cisco, TP-Link/Omada, UniFi/Ubiquiti y dispositivos estándar;
+- apertura auditada de RDP/VNC/SSH/web cuando ya están habilitados.
+
+Instalación detallada: [docs/RED_MULTI_MARCA.md](docs/RED_MULTI_MARCA.md).
+
 ## Qué no incluye aún (fases 4-7)
 
-Mapa UniFi, análisis de tráfico avanzado, motor de IA, ordenador de archivos e informes PDF. El menú los deja visibles como reservados para no simular módulos vacíos.
+Adaptadores de API específicos para versiones concretas de UniFi Network, Omada y Cisco Catalyst Center; análisis de tráfico avanzado, motor de IA, ordenador de archivos e informes PDF.
 
 ## Seguridad operativa
 

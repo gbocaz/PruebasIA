@@ -12,6 +12,10 @@ Administrar, supervisar y mantener computadores Windows y Linux desde un panel w
 │  PC Linux   │  heartbeat/inventory│   Reverse proxy  │
 │  (Agente)   │  tasks / resultados │   Caddy / Nginx  │
 └─────────────┘                     └────────┬─────────┘
+┌─────────────┐ SNMP/LLDP/TCP/ARP            │
+│ Red de sede │────────► Recolector ──HTTPS──┘
+│ multi-marca │        (uno por sede)
+└─────────────┘
                                              │
                     ┌────────────────────────┼────────────────────────┐
                     │                        ▼                        │
@@ -42,6 +46,7 @@ Administrar, supervisar y mantener computadores Windows y Linux desde un panel w
 | Componente | Tecnología | Responsabilidad |
 |---|---|---|
 | Agente | Go, servicio Windows / systemd | Inventario, heartbeat, ejecución de tareas firmadas |
+| Recolector de red | Go, servicio Windows / systemd | Descubrimiento TCP/ARP/SNMP/LLDP/CDP sin agente por dispositivo |
 | API | Python, FastAPI, SQLAlchemy | Autenticación, RBAC, inventario, instalaciones, alertas, auditoría |
 | Panel | React + Vite + Bootstrap | Administración sencilla y responsive |
 | IA (fases 5-6) | Python + Ollama / OpenRouter | Análisis, resúmenes, recomendaciones. Nunca actúa sola sobre varios equipos |
@@ -57,8 +62,8 @@ Administrar, supervisar y mantener computadores Windows y Linux desde un panel w
 5. **Integridad.** Instaladores con SHA-256. Tareas con firma HMAC e identificador único.
 6. **Degradación elegante.** Sin Internet el agente encola eventos. Sin IA el panel sigue operativo.
 
-## Alcance de este repositorio (MVP)
+## Alcance de este repositorio (MVP ampliado)
 
 Login, usuarios/roles, agente Windows/Linux, inventario de hardware y software, estado online/offline, grupos, dashboard, instalación remota controlada, historial, alertas y auditoría.
 
-Las fases 4-7 (UniFi, mapa de red, IA, archivos, informes avanzados) están diseñadas en el modelo y en la API, pero **no se implementan como módulos vacíos**. Se construyen cuando el MVP esté validado.
+Incluye además sedes, recolectores, credenciales SNMP cifradas, descubrimiento multi-marca, enlaces LLDP/CDP y apertura auditada de protocolos remotos preexistentes. Las APIs propietarias por versión, tráfico avanzado, IA, archivos e informes avanzados se construyen después; no se simulan con módulos vacíos.

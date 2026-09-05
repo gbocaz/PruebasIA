@@ -21,6 +21,7 @@ export default function NetworkPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [collectorToken, setCollectorToken] = useState("");
+  const [showSiteForm, setShowSiteForm] = useState(false);
   const [siteForm, setSiteForm] = useState({
     name: "",
     location: "",
@@ -92,6 +93,7 @@ export default function NetworkPage() {
       });
       await loadSites();
       setSiteId(data.id);
+      setShowSiteForm(false);
       setMessage("Sede creada. Instale ahora un recolector dentro de esa red.");
     } catch (e) {
       setError(errorText(e));
@@ -161,12 +163,13 @@ export default function NetworkPage() {
           <option value="">Seleccione sede</option>
           {sites.map((site) => <option key={site.id} value={site.id}>{site.name}</option>)}
         </select>
+        {canWrite && <button className="btn btn-outline-primary" onClick={() => setShowSiteForm(true)}>Nueva sede</button>}
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
       {message && <div className="alert alert-info">{message}</div>}
 
-      {!siteId && canWrite && (
+      {(!siteId || showSiteForm) && canWrite && (
         <form className="kpi" onSubmit={createSite}>
           <h2 className="h6">1. Registrar una sede o red autorizada</h2>
           <div className="row g-2">

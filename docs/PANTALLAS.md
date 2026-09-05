@@ -38,6 +38,12 @@ Carga de instalador, hash SHA-256, comando aprobado, destino (equipo, grupo o to
 
 CRUD de grupos y exclusiones; bandeja de alertas; RBAC; log de auditoría; tokens de enrolamiento.
 
+## Red
+
+Sedes, CIDR autorizados, recolectores, perfiles SNMP, ejecución confirmada de escaneos, inventario multi-marca y relaciones LLDP/CDP.
+
+La ficha de red muestra IP, MAC, fabricante, modelo, serie, puertos y protocolos preexistentes. RDP descarga un archivo sin contraseña; VNC, SSH y web abren el cliente correspondiente después de confirmar y registrar la acción.
+
 ## Reservado (fases 4-7)
 
-Red, mapa, IA, archivos, informes avanzados: el menú puede mostrarlos deshabilitados para no fingir módulos vacíos.
+Adaptadores propietarios por versión, analítica de tráfico, IA, archivos e informes avanzados quedan reservados; no se muestran como funciones terminadas.

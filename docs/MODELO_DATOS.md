@@ -20,6 +20,12 @@ devices 1──* agent_tasks
 devices 1──* events
 devices 1──* alerts
 devices 1──* install_job_devices *──1 install_jobs *──1 software_packages
+
+network_sites 1──* network_collectors
+network_sites 1──* network_credentials
+network_sites 1──* network_scan_jobs
+network_sites 1──* network_devices
+network_sites 1──* network_links
 ```
 
 ## Tablas
@@ -65,8 +71,17 @@ Muestras periódicas (CPU, RAM, disco, tráfico). No se guarda cada segundo; el 
 ### alerts / events / audit_logs / system_settings
 Alertas (info/advertencia/importante/critico), eventos de equipo, auditoría de administración, configuración clave/valor.
 
+### network_sites / network_collectors
+Sedes con CIDR privados autorizados, límite de hosts y recolectores autenticados mediante token individual hasheado.
+
+### network_credentials
+Perfiles SNMPv3 o SNMPv2c. Secretos cifrados en reposo; las respuestas administrativas nunca los devuelven.
+
+### network_scan_jobs / network_devices / network_links
+Escaneos confirmados, inventario neutral de fabricante y relaciones LLDP/CDP. Los dispositivos guardan IP, MAC, marca, modelo, serie, tipo, puertos y protocolos remotos detectados.
+
 ## Tablas previstas (fases posteriores)
 
-`network_devices`, `network_metrics`, `traffic_metrics`, `policies`, `device_policies`, `ai_analysis`, `file_analysis`.
+`network_metrics`, `traffic_metrics`, `policies`, `device_policies`, `ai_analysis`, `file_analysis`.
 
 No se crean APIs vacías sobre ellas en el MVP.

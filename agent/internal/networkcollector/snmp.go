@@ -15,6 +15,8 @@ const (
 	oidSysName        = ".1.3.6.1.2.1.1.5.0"
 	oidEntitySerial   = ".1.3.6.1.2.1.47.1.1.1.1.11"
 	oidEntityModel    = ".1.3.6.1.2.1.47.1.1.1.1.13"
+	oidIPNetToMedia   = ".1.3.6.1.2.1.4.22.1.2"
+	oidBridgeFDBPort  = ".1.3.6.1.2.1.17.4.3.1.2"
 	oidLLDPRemotePort = ".1.0.8802.1.1.2.1.4.1.1.7"
 	oidLLDPRemoteName = ".1.0.8802.1.1.2.1.4.1.1.9"
 	oidCDPRemoteName  = ".1.3.6.1.4.1.9.9.23.1.2.1.1.6"
@@ -29,6 +31,8 @@ type SNMPInfo struct {
 	Model          string
 	Serial         string
 	Neighbors      []Neighbor
+	IPToMAC        map[string]string
+	MACToPort      map[string]string
 }
 
 func probeSNMP(ip string, credentials []Credential, timeout time.Duration) (SNMPInfo, bool) {
@@ -145,9 +149,53 @@ func readSNMP(session *gosnmp.GoSNMP) (SNMPInfo, bool) {
 	}
 	info.Model = firstWalkString(session, oidEntityModel)
 	info.Serial = firstWalkString(session, oidEntitySerial)
+	info.IPToMAC = readIPNetToMedia(session)
+	info.MACToPort = readBridgeFDB(session)
 	info.Neighbors = append(info.Neighbors, readNeighbors(session, "lldp", oidLLDPRemoteName, oidLLDPRemotePort)...)
 	info.Neighbors = append(info.Neighbors, readNeighbors(session, "cdp", oidCDPRemoteName, oidCDPRemotePort)...)
 	return info, true
+}
+
+func readIPNetToMedia(session *gosnmp.GoSNMP) map[string]string {
+	output := map[string]string{}
+	_ = session.Walk(oidIPNetToMedia, func(pdu gosnmp.SnmpPDU) error {
+		suffix := oidSuffix(pdu.Name, oidIPNetToMedia)
+		parts := strings.Split(suffix, ".")
+		if len(parts) < 5 {
+			return nil
+		}
+		ip := strings.Join(parts[len(parts)-4:], ".")
+		if raw, ok := pdu.Value.([]byte); ok && len(raw) >= 6 {
+			if mac := normalizeMAC(fmt.Sprintf("%02x:%02x:%02x:%02x:%02x:%02x", raw[0], raw[1], raw[2], raw[3], raw[4], raw[5])); mac != "" {
+				output[ip] = mac
+			}
+		}
+		return nil
+	})
+	return output
+}
+
+func readBridgeFDB(session *gosnmp.GoSNMP) map[string]string {
+	output := map[string]string{}
+	_ = session.Walk(oidBridgeFDBPort, func(pdu gosnmp.SnmpPDU) error {
+		suffix := oidSuffix(pdu.Name, oidBridgeFDBPort)
+		parts := strings.Split(suffix, ".")
+		if len(parts) < 6 {
+			return nil
+		}
+		var macParts []string
+		for _, part := range parts[len(parts)-6:] {
+			value, err := strconv.Atoi(part)
+			if err != nil || value < 0 || value > 255 {
+				return nil
+			}
+			macParts = append(macParts, fmt.Sprintf("%02x", value))
+		}
+		mac := strings.Join(macParts, ":")
+		output[mac] = pduString(pdu)
+		return nil
+	})
+	return output
 }
 
 func firstWalkString(session *gosnmp.GoSNMP, oid string) string {
