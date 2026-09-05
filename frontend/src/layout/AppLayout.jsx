@@ -6,6 +6,7 @@ import api from "../api/client";
 const links = [
   { to: "/", label: "Dashboard" },
   { to: "/equipos", label: "Equipos" },
+  { to: "/red", label: "Red" },
   { to: "/software", label: "Software" },
   { to: "/paquetes", label: "Paquetes" },
   { to: "/instalaciones", label: "Instalaciones" },
@@ -39,7 +40,7 @@ export default function AppLayout({ children }) {
             {l.label}
           </NavLink>
         ))}
-        <div className="coming-soon px-3 mt-3 small">Red · IA · Archivos · Informes</div>
+        <div className="coming-soon px-3 mt-3 small">IA · Archivos · Informes avanzados</div>
         <div className="mt-auto p-3 small">{user?.username}<br /><span className="text-white-50">{user?.role}</span></div>
       </aside>
       <div className="content">

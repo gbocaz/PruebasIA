@@ -5,6 +5,8 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import DevicesPage from "./pages/DevicesPage";
 import DeviceDetailPage from "./pages/DeviceDetailPage";
+import NetworkPage from "./pages/NetworkPage";
+import NetworkDevicePage from "./pages/NetworkDevicePage";
 import SoftwarePage from "./pages/SoftwarePage";
 import PackagesPage from "./pages/PackagesPage";
 import InstallationsPage from "./pages/InstallationsPage";
@@ -30,6 +32,8 @@ export default function App() {
           <Route path="/" element={<Private><DashboardPage /></Private>} />
           <Route path="/equipos" element={<Private><DevicesPage /></Private>} />
           <Route path="/equipos/:id" element={<Private><DeviceDetailPage /></Private>} />
+          <Route path="/red" element={<Private><NetworkPage /></Private>} />
+          <Route path="/red/dispositivos/:id" element={<Private><NetworkDevicePage /></Private>} />
           <Route path="/software" element={<Private><SoftwarePage /></Private>} />
           <Route path="/paquetes" element={<Private><PackagesPage /></Private>} />
           <Route path="/instalaciones" element={<Private><InstallationsPage /></Private>} />
