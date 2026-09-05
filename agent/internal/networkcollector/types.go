@@ -1,7 +1,5 @@
 package networkcollector
 
-import "time"
-
 type Credential struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
@@ -23,10 +21,10 @@ type ServerConfig struct {
 }
 
 type ScanTask struct {
-	ScanID      string    `json:"scan_id"`
-	SiteID      string    `json:"site_id"`
-	Methods     []string  `json:"methods"`
-	RequestedAt time.Time `json:"requested_at"`
+	ScanID      string   `json:"scan_id"`
+	SiteID      string   `json:"site_id"`
+	Methods     []string `json:"methods"`
+	RequestedAt string   `json:"requested_at"`
 }
 
 type Neighbor struct {
