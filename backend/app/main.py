@@ -60,7 +60,9 @@ def health():
 
 
 def _init():
-    Base.metadata.create_all(bind=engine)
+    if settings.auto_create_schema:
+        # Comodidad para SQLite/desarrollo. Producción ejecuta Alembic antes del proceso web.
+        Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
     try:
         seed_if_empty(db)

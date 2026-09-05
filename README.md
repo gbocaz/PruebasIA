@@ -41,6 +41,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 mkdir -p data/packages
+alembic upgrade head
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Panel (otra terminal)
@@ -97,7 +98,7 @@ sudo systemctl enable --now tic-agent
 
 ```bash
 cp deploy/.env.example deploy/.env
-# edite SECRET_KEY y BOOTSTRAP_ADMIN_PASSWORD
+# edite SECRET_KEY, CREDENTIALS_KEY, BOOTSTRAP_ADMIN_PASSWORD y el proxy confiable
 docker compose up --build
 ```
 
