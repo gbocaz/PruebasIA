@@ -151,7 +151,7 @@ func Discover(cfg ServerConfig, methods []string, local LocalConfig) (ScanResult
 	sort.Slice(devices, func(i, j int) bool {
 		return bytesCompareIP(devices[i].IPAddress, devices[j].IPAddress) < 0
 	})
-	var links []Link
+	links := make([]Link, 0)
 	for _, device := range devices {
 		for _, neighbor := range device.neighbors {
 			links = append(links, Link{
@@ -221,7 +221,7 @@ func incrementIP(ip net.IP) {
 }
 
 func probeTCP(ip string, ports []int, timeout time.Duration) ([]int, bool) {
-	var open []int
+	open := make([]int, 0)
 	responsive := false
 	for _, port := range ports {
 		address := net.JoinHostPort(ip, strconv.Itoa(port))
@@ -251,7 +251,7 @@ func reverseName(ip string, timeout time.Duration) string {
 }
 
 func servicesFor(ip string, ports []int) ([]string, string) {
-	var services []string
+	services := make([]string, 0)
 	management := ""
 	for _, port := range ports {
 		switch port {
