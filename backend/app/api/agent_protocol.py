@@ -10,7 +10,7 @@ from app.database import get_db
 from app.enums import InstallStatus, TaskStatus
 from app.limiter import limiter
 from app.models.device import Agent, Device, DeviceEvent, DeviceGroupMember, DeviceMetric
-from app.models.software import InstallJobDevice, SoftwarePackage
+from app.models.software import InstallJob, InstallJobDevice, SoftwarePackage
 from app.models.user import EnrollmentToken
 from app.schemas.ops import EnrollIn, HeartbeatIn, InventoryIn, TaskResultIn
 from app.security.agent_auth import get_current_agent
@@ -196,16 +196,28 @@ def download_package(package_id: str, db: Session = Depends(get_db), agent: Agen
     pkg = db.get(SoftwarePackage, package_id)
     if pkg is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Paquete no encontrado")
+    assignment = (
+        db.query(InstallJobDevice)
+        .join(InstallJob, InstallJob.id == InstallJobDevice.job_id)
+        .filter(
+            InstallJobDevice.device_id == agent.device_id,
+            InstallJob.package_id == package_id,
+            InstallJobDevice.status.in_(
+                [
+                    InstallStatus.PENDIENTE.value,
+                    InstallStatus.DESCARGANDO.value,
+                    InstallStatus.INSTALANDO.value,
+                ]
+            ),
+        )
+        .order_by(InstallJobDevice.updated_at.desc())
+        .first()
+    )
+    if assignment is None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Este paquete no está asignado al equipo")
     path = Path(pkg.storage_path)
     if not path.exists():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Archivo no disponible")
-    pending = (
-        db.query(InstallJobDevice)
-        .filter(InstallJobDevice.device_id == agent.device_id, InstallJobDevice.status == InstallStatus.PENDIENTE.value)
-        .all()
-    )
-    for row in pending:
-        if row.job and row.job.package_id == package_id:
-            row.status = InstallStatus.DESCARGANDO.value
-            row.updated_at = utcnow()
+    assignment.status = InstallStatus.DESCARGANDO.value
+    assignment.updated_at = utcnow()
     return FileResponse(path, filename=pkg.original_filename, media_type="application/octet-stream")

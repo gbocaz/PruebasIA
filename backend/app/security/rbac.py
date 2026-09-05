@@ -1,5 +1,8 @@
+import ipaddress
+
 from fastapi import HTTPException, Request, status
 
+from app.config import get_settings
 from app.enums import RoleName
 from app.models.user import User
 
@@ -19,7 +22,22 @@ def require_roles(user: User, allowed: set[str]) -> None:
 
 
 def client_ip(request: Request) -> str:
+    direct = request.client.host if request.client else ""
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
+    if forwarded and _trusted_proxy(direct):
         return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else ""
+    return direct
+
+
+def _trusted_proxy(address: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    for raw in get_settings().trusted_proxy_list:
+        try:
+            if ip in ipaddress.ip_network(raw, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False

@@ -17,6 +17,7 @@ Implementados desde el MVP:
 | XSS | React escapa por defecto; cabeceras `Content-Security-Policy`. |
 | CORS | Orígenes explícitos. |
 | Token por agente | Único, hasheado, revocable. Secreto HMAC cifrado en reposo. |
+| Claves separadas | `SECRET_KEY` firma JWT; `CREDENTIALS_KEY` cifra TOTP, SNMP y secretos operativos. |
 | Instaladores | SHA-256 obligatorio. Comando aprobado. Confirmación en acciones masivas. |
 | Tareas | Firma, caducidad, `task_id` único. Sin comandos shell libres. |
 | Least privilege | SOPORTE no carga paquetes ni crea usuarios. VISUALIZADOR/DIRECTIVO no mutan. |
@@ -24,6 +25,7 @@ Implementados desde el MVP:
 | Recolector | Token único hasheado, HTTPS saliente, revocable y separado por sede. |
 | SNMP | SNMPv3 preferido; secretos cifrados y nunca devueltos al panel. |
 | Soporte remoto | Solo protocolos detectados y preexistentes; sin contraseñas; toda apertura se audita. |
+| Proxy confiable | `X-Forwarded-For` solo se acepta desde `TRUSTED_PROXY_CIDRS`. |
 
 ## Lo que esta plataforma no hace
 

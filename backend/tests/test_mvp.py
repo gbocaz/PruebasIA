@@ -1,10 +1,14 @@
 import io
 
+import pyotp
 import pytest
 from fastapi.testclient import TestClient
 
 from app.config import get_settings
+from app.database import SessionLocal
 from app.main import app
+from app.models.ops import AuditLog
+from app.models.user import User
 
 
 @pytest.fixture
@@ -28,8 +32,17 @@ def test_health(client):
 
 
 def test_login_rejects_bad_password(client):
-    r = client.post("/api/auth/login", json={"username": "admin", "password": "incorrecta"})
+    spoofed = "203.0.113.77"
+    r = client.post(
+        "/api/auth/login",
+        headers={"X-Forwarded-For": spoofed},
+        json={"username": "admin", "password": "incorrecta"},
+    )
     assert r.status_code == 401
+    with SessionLocal() as db:
+        audit = db.query(AuditLog).filter(AuditLog.action == "login", AuditLog.result == "error").order_by(AuditLog.created_at.desc()).first()
+        assert audit is not None
+        assert audit.ip_address != spoofed
 
 
 def test_login_and_me(client):
@@ -37,6 +50,26 @@ def test_login_and_me(client):
     me = client.get("/api/auth/me", headers=headers)
     assert me.status_code == 200
     assert me.json()["role"] == "superadmin"
+
+
+def test_totp_secret_is_encrypted(client):
+    headers = login(client)
+    setup = client.post("/api/auth/2fa/setup", headers=headers)
+    assert setup.status_code == 200
+    secret = setup.json()["secret"]
+    with SessionLocal() as db:
+        admin = db.query(User).filter(User.username == "admin").one()
+        assert admin.totp_secret != secret
+        assert admin.totp_secret.startswith("gAAAA")
+    code = pyotp.TOTP(secret).now()
+    enabled = client.post("/api/auth/2fa/enable", headers=headers, json={"code": code})
+    assert enabled.status_code == 200
+    disabled = client.post(
+        "/api/auth/2fa/disable",
+        headers=headers,
+        json={"code": pyotp.TOTP(secret).now()},
+    )
+    assert disabled.status_code == 200
 
 
 def test_visualizador_cannot_create_users(client):
@@ -204,6 +237,15 @@ def test_package_install_task_flow(client):
         json={"package_id": pkg["id"], "target_type": "device", "target_id": device_id, "confirm": True},
     )
     assert job.status_code == 201, job.text
+    _headers, other_agent = _enroll_agent(client)
+    unauthorized = client.get(
+        f"/agent/packages/{pkg['id']}/download",
+        headers={"Authorization": f"Bearer {other_agent['agent_token']}"},
+    )
+    assert unauthorized.status_code == 403
+    authorized = client.get(f"/agent/packages/{pkg['id']}/download", headers=agent_headers)
+    assert authorized.status_code == 200
+    assert authorized.content == b"fake-deb-content"
     tasks = client.get("/agent/tasks", headers=agent_headers)
     assert tasks.status_code == 200
     assert len(tasks.json()) == 1

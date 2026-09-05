@@ -17,6 +17,7 @@ from app.schemas.auth import (
     UserOut,
 )
 from app.security.audit import write_audit
+from app.security.crypto import decrypt_totp_compat, encrypt_secret
 from app.security.deps import get_current_user
 from app.security.passwords import hash_password, verify_password
 from app.security.rbac import client_ip
@@ -24,6 +25,10 @@ from app.security.tokens import create_access_token, new_token, sha256_hex, utcn
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 REFRESH_COOKIE = "tic_refresh"
+
+
+def _totp_secret(user: User) -> str:
+    return decrypt_totp_compat(user.totp_secret) if user.totp_secret else ""
 
 
 def _set_refresh_cookie(response: Response, raw_token: str) -> None:
@@ -67,12 +72,14 @@ def login(request: Request, body: LoginRequest, response: Response, db: Session 
     user = db.query(User).filter(User.username == body.username).one_or_none()
     if user is None or not user.is_active or not verify_password(body.password, user.password_hash):
         write_audit(db, user=None, ip=client_ip(request), action="login", result="error", details="credenciales inválidas")
+        db.commit()
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Usuario o contraseña incorrectos")
     if user.totp_enabled:
         if not body.totp_code:
             return TokenResponse(access_token="", expires_in=0, requires_2fa=True, username=user.username, role=user.role)
-        if not user.totp_secret or not pyotp.TOTP(user.totp_secret).verify(body.totp_code, valid_window=1):
+        if not user.totp_secret or not pyotp.TOTP(_totp_secret(user)).verify(body.totp_code, valid_window=1):
             write_audit(db, user=user, ip=client_ip(request), action="login_2fa", result="error")
+            db.commit()
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Código 2FA inválido")
     user.last_login_at = utcnow()
     write_audit(db, user=user, ip=client_ip(request), action="login")
@@ -133,7 +140,7 @@ def change_password(
 @router.post("/2fa/setup", response_model=TwoFASetupOut)
 def setup_2fa(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     secret = pyotp.random_base32()
-    user.totp_secret = secret
+    user.totp_secret = encrypt_secret(secret)
     user.totp_enabled = False
     url = pyotp.totp.TOTP(secret).provisioning_uri(name=user.username, issuer_name="TIC Control AI")
     return TwoFASetupOut(secret=secret, otpauth_url=url)
@@ -146,7 +153,7 @@ def enable_2fa(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    if not user.totp_secret or not pyotp.TOTP(user.totp_secret).verify(body.code, valid_window=1):
+    if not user.totp_secret or not pyotp.TOTP(_totp_secret(user)).verify(body.code, valid_window=1):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Código 2FA inválido")
     user.totp_enabled = True
     write_audit(db, user=user, ip=client_ip(request), action="enable_2fa")
@@ -162,7 +169,7 @@ def disable_2fa(
 ):
     if not user.totp_enabled or not user.totp_secret:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "2FA no está activo")
-    if not pyotp.TOTP(user.totp_secret).verify(body.code, valid_window=1):
+    if not pyotp.TOTP(_totp_secret(user)).verify(body.code, valid_window=1):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Código 2FA inválido")
     user.totp_enabled = False
     user.totp_secret = None
